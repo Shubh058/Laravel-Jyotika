@@ -17,6 +17,9 @@ RUN apt-get update \
 COPY --from=vendor /app /var/www/html
 COPY docker/apache.conf /etc/apache2/sites-available/000-default.conf
 
-RUN chown -R www-data:www-data storage bootstrap/cache
+RUN chmod +x deploy-start.sh \
+    && chown -R www-data:www-data storage bootstrap/cache
 
-EXPOSE 80
+EXPOSE 10000
+
+CMD ["sh", "deploy-start.sh"]
