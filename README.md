@@ -87,6 +87,14 @@ DB_PASSWORD=your-database-password
 SESSION_DRIVER=database
 QUEUE_CONNECTION=database
 CACHE_STORE=database
+
+NEWS_LIVE_ENABLED=true
+NEWS_GNEWS_API_KEY=your-gnews-key
+NEWSAPI_API_KEY=your-newsapi-key
+NEWS_COUNTRY=in
+NEWS_LANGUAGE=en
+NEWS_DAILY_LIMIT=20
+NEWS_SEARCH_LIMIT=20
 ```
 
 Generate `APP_KEY` locally if needed:
@@ -99,10 +107,13 @@ After deploy, run:
 
 ```bash
 php artisan migrate --seed --force
+php artisan news:sync
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 ```
+
+Live news is synced into the `news` table from GNews and NewsAPI. The seeded demo stories remain first in the feed, then live articles appear after them. Search requests also ask the configured news APIs for matching articles and store new results.
 
 The backend includes a `Dockerfile` for container hosts. It serves Laravel from `public/` using Apache and PHP 8.2.
 

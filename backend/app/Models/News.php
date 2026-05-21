@@ -22,10 +22,15 @@ class News extends Model
         'created_by',
         'featured_image',
         'status',
+        'origin',
+        'external_provider',
+        'external_id',
+        'fetched_at',
     ];
 
     protected $casts = [
         'published_at' => 'datetime',
+        'fetched_at' => 'datetime',
     ];
 
     public function author()

@@ -9,6 +9,11 @@ const categoryImages = {
   'Economy': '/images/news_artisans.png',
   'Education': '/images/news_education.png',
   'Technology': '/images/news_digital.png',
+  'Government Scheme': '/images/news_artisans.png',
+  'Defence': '/images/news_summit.png',
+  'Health': '/images/news_education.png',
+  'Science': '/images/news_digital.png',
+  'General': '/images/news_digital.png',
 };
 
 const NewsFeed = () => {
@@ -17,12 +22,17 @@ const NewsFeed = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const categories = ['All', 'Economy', 'Technology', 'Education', 'Foreign Affairs'];
+  const categories = ['All', 'Education', 'Technology', 'Government Scheme', 'Foreign Affairs', 'Defence', 'Economy', 'Health', 'Science'];
 
   useEffect(() => {
     const fetchNews = async () => {
+      setLoading(true);
       try {
-        const response = await api.get('/news');
+        const params = {};
+        if (activeCategory !== 'All') params.category = activeCategory;
+        if (searchTerm.trim()) params.search = searchTerm.trim();
+
+        const response = await api.get('/news', { params });
         setNews(response.data.data || []);
       } catch (error) {
         console.error("Error fetching news", error);
@@ -30,14 +40,9 @@ const NewsFeed = () => {
         setLoading(false);
       }
     };
-    fetchNews();
-  }, []);
-
-  const filteredNews = news.filter(item => {
-    const matchCategory = activeCategory === 'All' || item.category === activeCategory;
-    const matchSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchCategory && matchSearch;
-  });
+    const timeout = setTimeout(fetchNews, searchTerm.trim() ? 450 : 0);
+    return () => clearTimeout(timeout);
+  }, [activeCategory, searchTerm]);
 
   if (loading) {
     return (
@@ -101,7 +106,7 @@ const NewsFeed = () => {
       </div>
 
       {/* News grid */}
-      {filteredNews.length === 0 ? (
+      {news.length === 0 ? (
         <div className="card p-16 text-center">
           <Newspaper className="w-16 h-16 text-slate-300 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-slate-700 mb-2">No stories found</h3>
@@ -109,7 +114,7 @@ const NewsFeed = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredNews.map(item => (
+          {news.map(item => (
             <Link
               to={`/news/${item.id}`}
               key={item.id}

@@ -5,22 +5,36 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\News;
+use App\Services\LiveNewsService;
 use Illuminate\Support\Str;
 
 class NewsController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request, LiveNewsService $liveNewsService)
     {
+        if ($request->filled('search')) {
+            $liveNewsService->searchAndStore($request->string('search')->toString());
+        } else {
+            $liveNewsService->syncDailyIfStale();
+        }
+
         $query = News::with(['author', 'analyticsLogs'])
             ->where('status', 'published')
+            ->orderByRaw("CASE WHEN origin = 'seeded' THEN 0 ELSE 1 END")
             ->orderBy('published_at', 'desc');
 
-        if ($request->has('category')) {
+        if ($request->filled('category') && $request->category !== 'All') {
             $query->where('category', $request->category);
         }
 
-        if ($request->has('search')) {
-            $query->where('title', 'like', '%' . $request->search . '%');
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($builder) use ($search) {
+                $builder->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('summary', 'like', '%' . $search . '%')
+                    ->orWhere('content', 'like', '%' . $search . '%')
+                    ->orWhere('source_name', 'like', '%' . $search . '%');
+            });
         }
 
         return response()->json($query->paginate(12));
