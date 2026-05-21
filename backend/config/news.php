@@ -28,5 +28,6 @@ return [
         'Economy' => 'India economy OR finance OR budget',
         'Health' => 'India health OR healthcare OR public health',
         'Science' => 'India science OR research OR space',
+        'Sports' => 'India sports OR cricket OR football OR hockey OR athletics',
     ],
 ];

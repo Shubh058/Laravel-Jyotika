@@ -13,8 +13,10 @@ const categoryImages = {
   'Defence': '/images/news_summit.png',
   'Health': '/images/news_education.png',
   'Science': '/images/news_digital.png',
-  'General': '/images/news_digital.png',
+  'General': '/images/news_digital.png'
 };
+
+const getFallbackImage = (category) => categoryImages[category] || categoryImages['General'] || '/images/news_digital.png';
 
 const NewsFeed = () => {
   const [news, setNews] = useState([]);
@@ -22,7 +24,7 @@ const NewsFeed = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const categories = ['All', 'Education', 'Technology', 'Government Scheme', 'Foreign Affairs', 'Defence', 'Economy', 'Health', 'Science'];
+  const categories = ['All', 'Education', 'Technology', 'Government Scheme', 'Foreign Affairs', 'Defence', 'Economy', 'Health', 'Science', 'Sports'];
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -123,7 +125,7 @@ const NewsFeed = () => {
               {/* Image */}
               <div className="h-52 relative overflow-hidden">
                 <img
-                  src={item.featured_image || categoryImages[item.category] || '/images/news_digital.png'}
+                  src={item.featured_image || getFallbackImage(item.category)}
                   alt={item.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -135,7 +137,7 @@ const NewsFeed = () => {
                 </div>
                 <div className="absolute bottom-4 right-4">
                   <span className="badge !bg-black/50 backdrop-blur-sm !text-white text-xs">
-                    {item.analytics_logs?.[0]?.total_feedback || 0} reviews
+                    {item.analytics_logs && item.analytics_logs.length > 0 ? item.analytics_logs[0].total_feedback : 0} reviews
                   </span>
                 </div>
               </div>

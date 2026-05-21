@@ -7,10 +7,49 @@ use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class LiveNewsService
 {
+    private const CATEGORY_KEYWORDS = [
+        'Education' => [
+            'education', 'school', 'schools', 'university', 'universities', 'college', 'colleges',
+            'student', 'students', 'teacher', 'teachers', 'curriculum', 'exam', 'exams', 'admission',
+        ],
+        'Technology' => [
+            'technology', 'tech', 'digital india', 'ai', 'artificial intelligence', 'startup',
+            'software', 'app', 'apps', 'internet', 'telecom', 'cyber', 'semiconductor',
+        ],
+        'Government Scheme' => [
+            'scheme', 'yojana', 'welfare', 'benefit', 'subsidy', 'incentive', 'pm-', 'pm ',
+            'modi', 'initiative', 'mission', 'program', 'programme', 'launches',
+        ],
+        'Foreign Affairs' => [
+            'foreign affairs', 'diplomacy', 'diplomatic', 'summit', 'bilateral', 'multilateral',
+            'embassy', 'foreign minister', 'international', 'united nations', 'g20', 'brics',
+        ],
+        'Defence' => [
+            'defence', 'defense', 'military', 'armed forces', 'army', 'navy', 'air force',
+            'border', 'security forces', 'missile', 'warship', 'drone', 'surveillance',
+        ],
+        'Economy' => [
+            'economy', 'economic', 'finance', 'fiscal', 'budget', 'tax', 'taxes', 'gdp',
+            'inflation', 'market', 'markets', 'bank', 'banking', 'investment', 'exports',
+        ],
+        'Health' => [
+            'health', 'healthcare', 'hospital', 'medical', 'medicine', 'doctor', 'doctors',
+            'vaccine', 'vaccination', 'disease', 'public health', 'wellness',
+        ],
+        'Science' => [
+            'science', 'research', 'space', 'isro', 'nasa', 'satellite', 'astronomy', 'innovation',
+        ],
+        'Sports' => [
+            'sports', 'sport', 'cricket', 'football', 'hockey', 'tennis', 'athletics', 'olympics',
+            'olympic', 'tournament', 'match', 'league', 'player', 'players',
+        ],
+    ];
+
     public function syncDailyBurningNews(): int
     {
         if (!config('news.live_enabled')) {
@@ -27,6 +66,8 @@ class LiveNewsService
                 $created += $this->storeArticles($articles, $provider, $category);
             }
         }
+
+        Log::info("Live News Sync completed. Created $created new articles.");
 
         $this->pruneLiveArticles();
 
@@ -65,6 +106,7 @@ class LiveNewsService
         $key = config("news.providers.$provider.key");
 
         if (!$key) {
+            Log::warning("News provider [$provider] is missing an API key.");
             return [];
         }
 
@@ -132,7 +174,7 @@ class LiveNewsService
             ->all();
     }
 
-    private function storeArticles(array $articles, string $provider, string $category): int
+    private function storeArticles(array $articles, string $provider, string $defaultCategory): int
     {
         $created = 0;
         $authorId = $this->systemUserId();
@@ -142,6 +184,7 @@ class LiveNewsService
                 continue;
             }
 
+            $category = $this->inferCategory($article, $defaultCategory);
             $externalId = sha1($article['source_url']);
             $content = $article['content'] ?: $article['summary'] ?: 'Read the full story from the original source.';
 
@@ -177,7 +220,7 @@ class LiveNewsService
 
     private function pruneLiveArticles(): void
     {
-        $limit = max(config('news.daily_limit'), 20);
+        $limit = max((int) config('news.daily_limit', 20), 10);
         $idsToKeep = News::where('origin', 'live')
             ->orderByDesc('published_at')
             ->limit($limit)
@@ -202,7 +245,18 @@ class LiveNewsService
 
     private function uniqueSlug(string $title): string
     {
-        return Str::slug($title) . '-' . Str::lower(Str::random(8));
+        $baseSlug = Str::limit(Str::slug($title), 200, '');
+        $slug = $baseSlug;
+
+        $count = 1;
+        while (News::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . Str::lower(Str::random(6));
+            if ($count++ > 5) {
+                break;
+            }
+        }
+
+        return $slug;
     }
 
     private function parsePublishedAt(?string $publishedAt): Carbon
@@ -214,15 +268,35 @@ class LiveNewsService
         }
     }
 
+    private function inferCategory(array $article, string $fallbackCategory): string
+    {
+        $articleText = Str::lower(implode(' ', array_filter([
+            $article['title'] ?? null,
+            $article['summary'] ?? null,
+            $article['content'] ?? null,
+            $article['source_name'] ?? null,
+        ])));
+
+        $guessed = $this->guessCategoryFromText($articleText);
+
+        return $guessed ?? $fallbackCategory ?? 'General';
+    }
+
     private function guessCategory(string $keyword): string
     {
-        $keyword = Str::lower($keyword);
-        foreach (array_keys(config('news.topics')) as $category) {
-            if (Str::contains($keyword, Str::lower($category))) {
-                return $category;
+        return $this->guessCategoryFromText(Str::lower($keyword)) ?? 'General';
+    }
+
+    private function guessCategoryFromText(string $text): ?string
+    {
+        foreach (self::CATEGORY_KEYWORDS as $category => $keywords) {
+            foreach ($keywords as $keyword) {
+                if (Str::contains($text, $keyword)) {
+                    return $category;
+                }
             }
         }
 
-        return 'General';
+        return null;
     }
 }
