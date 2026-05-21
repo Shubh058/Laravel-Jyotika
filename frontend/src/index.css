@@ -1,0 +1,173 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Poppins:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+
+  --color-accent-50: #fff7ed;
+  --color-accent-100: #ffedd5;
+  --color-accent-200: #fed7aa;
+  --color-accent-300: #fdba74;
+  --color-accent-400: #fb923c;
+  --color-accent-500: #f97316;
+  --color-accent-600: #ea580c;
+  --color-accent-700: #c2410c;
+  --color-accent-800: #9a3412;
+  --color-accent-900: #7c2d12;
+
+  --font-sans: "Inter", "Poppins", system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    @apply antialiased scroll-smooth;
+  }
+  body {
+    @apply bg-slate-50 text-slate-800 leading-relaxed;
+    font-family: 'Inter', 'Poppins', system-ui, sans-serif;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+    font-family: 'Poppins', 'Inter', system-ui, sans-serif;
+  }
+}
+
+@layer components {
+  /* Premium card */
+  .card {
+    @apply bg-white rounded-2xl border border-slate-200/80 shadow-sm transition-all duration-300;
+  }
+  .card:hover {
+    @apply shadow-lg shadow-primary-100/50 border-primary-200 -translate-y-1;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-primary-600 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md
+           hover:bg-primary-700 hover:shadow-lg hover:shadow-primary-200
+           active:scale-[0.98] transition-all duration-200;
+  }
+  .btn-outline {
+    @apply border-2 border-primary-600 text-primary-600 font-semibold px-6 py-2.5 rounded-xl
+           hover:bg-primary-50 active:scale-[0.98] transition-all duration-200;
+  }
+  .btn-accent {
+    @apply bg-accent-500 text-white font-semibold px-6 py-2.5 rounded-xl shadow-md
+           hover:bg-accent-600 hover:shadow-lg hover:shadow-accent-200
+           active:scale-[0.98] transition-all duration-200;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-bold tracking-wide uppercase;
+  }
+  .badge-blue {
+    @apply bg-primary-100 text-primary-700;
+  }
+  .badge-orange {
+    @apply bg-accent-100 text-accent-700;
+  }
+  .badge-green {
+    @apply bg-emerald-100 text-emerald-700;
+  }
+  .badge-red {
+    @apply bg-red-100 text-red-700;
+  }
+
+  /* Input */
+  .input {
+    @apply w-full px-4 py-3 rounded-xl border border-slate-300
+           focus:ring-2 focus:ring-primary-500/30 focus:border-primary-500
+           outline-none transition-all duration-200 bg-white text-slate-800
+           placeholder:text-slate-400;
+  }
+
+  /* Stat card */
+  .stat-card {
+    @apply bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm
+           hover:shadow-md transition-all duration-300;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-xl;
+  }
+
+  /* Rating stars */
+  .star {
+    @apply w-6 h-6 cursor-pointer transition-all duration-150;
+  }
+  .star-active {
+    @apply text-amber-400 drop-shadow-sm;
+  }
+  .star-inactive {
+    @apply text-slate-300 hover:text-amber-300;
+  }
+
+  /* Navbar premium */
+  .navbar {
+    @apply bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-sm sticky top-0 z-50;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    @apply bg-white border-r border-slate-200/80 shadow-sm;
+  }
+
+  /* Skeleton loader */
+  .skeleton {
+    @apply bg-slate-200 rounded-xl animate-pulse;
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms ease, transform 300ms ease;
+}
