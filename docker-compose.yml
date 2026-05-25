@@ -28,6 +28,7 @@ services:
       DB_DATABASE: laravel
       DB_USERNAME: laravel
       DB_PASSWORD: secret
+      PORT: 10000
     volumes:
       - ./backend:/var/www
       - ./backend/storage:/var/www/storage
@@ -36,7 +37,7 @@ services:
     networks:
       - appnet
     ports:
-      - "9000:9000"
+      - "9000:10000"
 
   frontend:
     build:
