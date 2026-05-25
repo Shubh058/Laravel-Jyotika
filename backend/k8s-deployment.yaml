@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: laravel-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: laravel-backend
+  template:
+    metadata:
+      labels:
+        app: laravel-backend
+    spec:
+      containers:
+      - name: laravel-backend
+        image: your-dockerhub-username/laravel-backend:latest
+        ports:
+        - containerPort: 9000
+        env:
+        - name: APP_ENV
+          value: production
+        - name: DB_HOST
+          value: mysql
+        - name: DB_DATABASE
+          value: laravel
+        - name: DB_USERNAME
+          value: laravel
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mysql-secret
+              key: password
+        volumeMounts:
+        - name: storage
+          mountPath: /var/www/storage
+      volumes:
+      - name: storage
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: laravel-backend
+spec:
+  selector:
+    app: laravel-backend
+  ports:
+    - protocol: TCP
+      port: 9000
+      targetPort: 9000
